@@ -47,7 +47,7 @@ public class BookController {
 
     @PatchMapping("/{isbn}")
     public BookDTO updatePartialBook(@PathVariable String isbn,
-                                  @Validated @RequestBody UpdateBookDTO bookDTO) {
+                                  @RequestBody UpdateBookDTO bookDTO) {
         try {
             return bookService.updateBook(isbn, bookDTO);
         }catch (BookNotFoundException ex) {

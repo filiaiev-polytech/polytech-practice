@@ -1,5 +1,7 @@
 package com.filiaiev.polytech.service;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.filiaiev.polytech.dto.BookDTO;
 import com.filiaiev.polytech.dto.UpdateBookDTO;
 import com.filiaiev.polytech.exception.BookNotFoundException;
@@ -14,7 +16,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,6 +39,9 @@ public class BookServiceImplTest {
 
     @Mock
     private BookRepository bookRepository;
+
+    @Mock
+    private ObjectMapper objectMapper;
 
     private List<Book> books;
 
@@ -185,7 +192,7 @@ public class BookServiceImplTest {
     }
 
     @Test
-    public void UpdatePartBookWithGivenIsbn_Success() {
+    public void UpdatePartBookWithGivenIsbn_Success() throws JsonMappingException {
         String isbn = "9780340960196";
         String newTitle = "Updated Partially";
         String newAuthorName = "UpdatedAuthor";
@@ -199,6 +206,12 @@ public class BookServiceImplTest {
                         .filter(v -> v.getIsbn().equals(isbn))
                         .findFirst()
                 );
+
+        when(objectMapper.updateValue(ArgumentMatchers.any(Object.class), ArgumentMatchers.any(Object.class)))
+                .thenAnswer(invocationOnMock -> new ObjectMapper().updateValue(
+                        invocationOnMock.getArgument(0),
+                        invocationOnMock.getArgument(1)
+                ));
 
         Book oldBook = bookRepository.findById(isbn).get();
         oldBook.setTitle(newTitle);

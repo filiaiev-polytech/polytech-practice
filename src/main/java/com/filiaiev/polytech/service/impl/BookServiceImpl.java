@@ -1,5 +1,8 @@
 package com.filiaiev.polytech.service.impl;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.filiaiev.polytech.dto.BookDTO;
 import com.filiaiev.polytech.dto.UpdateBookDTO;
 import com.filiaiev.polytech.exception.BookNotFoundException;
@@ -8,6 +11,7 @@ import com.filiaiev.polytech.model.Book;
 import com.filiaiev.polytech.repository.BookRepository;
 import com.filiaiev.polytech.service.BookService;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +26,7 @@ import java.util.stream.Collectors;
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     public List<BookDTO> getAllBooks() {
@@ -60,12 +65,13 @@ public class BookServiceImpl implements BookService {
         return BookMapper.INSTANCE.bookToBookDTO(toUpdate);
     }
 
+    @SneakyThrows
     @Override
     public BookDTO updateBook(String isbn, UpdateBookDTO bookDTO) {
         Book toUpdate = bookRepository.findById(isbn)
                 .orElseThrow(BookNotFoundException::new);
 
-        BeanUtils.copyProperties(bookDTO, toUpdate);
+        toUpdate = objectMapper.updateValue(toUpdate, bookDTO);
 
         return BookMapper.INSTANCE.bookToBookDTO(toUpdate);
     }
